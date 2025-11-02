@@ -2,7 +2,9 @@ package com.afulvio.banklifybackend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "client")
@@ -11,24 +13,27 @@ public class ClientEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "client_id")
     private Long clientId;
 
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
 
-    @Column(unique = true)
-    private String taxCode; // Codice Fiscale
+    @Column(name = "tax_code", unique = true)
+    private String taxCode;
 
-    @Column(unique = true)
+    @Column(name = "email", unique = true)
     private String email;
 
-    // NOTA: In un'applicazione reale, questa stringa è l'HASH della password (es. BCrypt)
+    @Column(name = "password_hash")
     private String passwordHash;
 
+    @Column(name = "registration_date")
     private LocalDateTime registrationDate;
 
-    // Relazione uno a molti (un cliente può avere più conti)
-    // Mappato dall'attributo 'client' nella classe Account
-    // @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
-    // private List<Account> accounts;
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
+    private List<AccountEntity> accounts;
 }

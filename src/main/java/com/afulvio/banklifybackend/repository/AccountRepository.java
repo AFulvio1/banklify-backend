@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends JpaRepository<AccountEntity, String> {
 
-    List<AccountEntity> findByClientId(Long clientId);
+    List<AccountEntity> findByClientClientId(Long clientId);
 
     Optional<AccountEntity> findByIbanAndStatus(String iban, String status);
 

@@ -2,6 +2,7 @@ package com.afulvio.banklifybackend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -11,22 +12,23 @@ import java.time.LocalDateTime;
 public class AccountEntity {
 
     @Id
-    private String iban; // IBAN è la chiave primaria
+    @Column(name = "iban")
+    private String iban;
 
-    // Relazione molti a uno: molti account a un client
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
     private ClientEntity client;
 
-    // Utilizzo di BigDecimal per l'accuratezza finanziaria
     @Column(precision = 15, scale = 2)
-    private BigDecimal ledgerBalance; // Saldo Contabile
+    private BigDecimal ledgerBalance;
 
     @Column(precision = 15, scale = 2)
-    private BigDecimal availableBalance; // Saldo Disponibile
+    private BigDecimal availableBalance;
 
-    private String status; // ACTIVE, BLOCKED
+    @Column(name = "status")
+    private String status;
 
+    @Column(name = "opening_date")
     private LocalDateTime openingDate;
 
 }

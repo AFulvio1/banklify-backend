@@ -2,6 +2,7 @@ package com.afulvio.banklifybackend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -14,20 +15,19 @@ public class TransactionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long transactionId;
 
-    // IBAN del conto coinvolto in questa transazione
     @Column(name = "account_iban", nullable = false)
     private String accountIban;
 
-    private LocalDateTime timestamp;
+    @Column(name = "event_timestamp", nullable = false)
+    private LocalDateTime eventTimestamp;
 
-    // Importo con segno (positivo per accredito, negativo per addebito)
-    @Column(precision = 15, scale = 2, nullable = false)
+    @Column(name = "amount", precision = 15, scale = 2, nullable = false)
     private BigDecimal amount;
 
-    private String transactionType; // Esempio: OUTGOING_TRANSFER, INCOMING_TRANSFER
+    @Column(name = "transaction_type", nullable = false)
+    private String transactionType;
 
-    private String description; // Causale
+    @Column(name = "description")
+    private String description;
 
-    // In un sistema reale, si potrebbe includere un riferimento all'altra transazione
-    // per bonifici (es. 'relatedTransactionId')
 }

@@ -24,20 +24,14 @@ public class TransactionController {
 
     @PostMapping("/transfer")
     public ResponseEntity<?> executeTransfer(@Valid @RequestBody TransferDTO transferDTO) {
-        // NOTA: In un'applicazione reale, l'IBAN mittente dovrebbe essere preso dal token JWT
-        // e non dal body della richiesta.
         try {
             transactionService.executeTransfer(transferDTO);
             return ResponseEntity.ok(Map.of("message", "Bonifico eseguito con successo."));
-
         } catch (AccountNotFoundException | IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
-
         } catch (InsufficientFundsException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-
         } catch (Exception e) {
-            // Gestione di errori generici (es. problemi di connessione DB, eccezioni transazionali)
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Errore interno durante l'elaborazione del bonifico."));
         }
