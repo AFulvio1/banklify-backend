@@ -2,23 +2,13 @@ spring:
     application:
         name: banklify-backend
     datasource:
-      url: jdbc:h2:mem:testdb
-      driverClassName: org.h2.Driver
-      username: sa
-      password:
-    h2:
-      console:
-        enabled: true
-    jpa:
-      hibernate:
-        ddl-auto: none
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.H2Dialect
-      show-sql: true
-      database-platform: org.hibernate.dialect.H2Dialect
-    sql:
-      init:
-        mode: always
-        schema-locations: classpath:static/ddl.sql
-        data-locations: classpath:static/data.sql
+      url: jdbc:postgresql://localhost:5432/banklify-db
+      username: banklify_user
+      password: banklifypassword
+      driver-class-name: org.postgresql.Driver
+      jpa:
+        show-sql: true
+
+jwt:
+    secret: your_jwt_secret_key
+    expiration: 3600000
