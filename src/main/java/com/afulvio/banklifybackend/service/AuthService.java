@@ -74,7 +74,7 @@ public class AuthService {
                 .map(AccountEntity::getIban)
                 .orElseThrow(() -> new RuntimeException("Primary account not found."));
 
-        return new LoginResponse(token, iban);
+        return new LoginResponse(token, iban, client.getFirstName());
     }
 
 }

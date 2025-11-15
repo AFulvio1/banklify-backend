@@ -8,11 +8,13 @@ import com.afulvio.banklifybackend.repository.AccountRepository;
 import com.afulvio.banklifybackend.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -69,4 +71,10 @@ public class TransactionService {
         creditTransaction.setEventTimestamp(now);
         transactionRepository.save(creditTransaction);
     }
+
+    public List<TransactionEntity> getLatestMovements(String iban, int limit) {
+        PageRequest pageRequest = PageRequest.of(0, limit);
+        return transactionRepository.findByAccountIbanOrderByEventTimestampDesc(iban, pageRequest);
+    }
+
 }

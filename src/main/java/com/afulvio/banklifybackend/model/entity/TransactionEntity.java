@@ -1,5 +1,6 @@
 package com.afulvio.banklifybackend.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,6 +19,7 @@ public class TransactionEntity {
     @Column(name = "account_iban", nullable = false)
     private String accountIban;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     @Column(name = "event_timestamp", nullable = false)
     private LocalDateTime eventTimestamp;
 
