@@ -2,6 +2,7 @@ package com.afulvio.banklifybackend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class AccountEntity {
     @Column(name = "status")
     private String status;
 
+    @UpdateTimestamp
     @Column(name = "opening_date")
     private LocalDateTime openingDate;
 

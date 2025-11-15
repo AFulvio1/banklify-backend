@@ -2,6 +2,7 @@ package com.afulvio.banklifybackend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +13,8 @@ import java.util.List;
 public class ClientEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "client_sequence")
+    @SequenceGenerator(name = "client_sequence", sequenceName = "client_id_seq", allocationSize = 1)
     @Column(name = "client_id")
     private Long clientId;
 
@@ -31,6 +33,7 @@ public class ClientEntity {
     @Column(name = "password_hash")
     private String passwordHash;
 
+    @UpdateTimestamp
     @Column(name = "registration_date")
     private LocalDateTime registrationDate;
 

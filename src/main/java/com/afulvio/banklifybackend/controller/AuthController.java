@@ -30,12 +30,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody LoginRequest request) {
-        try {
-            String token = authService.authenticateAndGenerateToken(request);
-            return ResponseEntity.ok(new LoginResponse(token));
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>("Authentication error: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
-        }
+    public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginRequest request) {
+        LoginResponse response = authService.authenticateAndGenerateToken(request);
+        return ResponseEntity.ok(response);
     }
 }

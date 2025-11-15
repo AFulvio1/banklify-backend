@@ -1,17 +1,20 @@
 package com.afulvio.banklifybackend.configuration;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
 @Component
+@Slf4j
 public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
@@ -35,16 +38,18 @@ public class JwtTokenProvider {
     }
 
     private Key key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public boolean validateToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(authToken);
             return true;
-        } catch (Exception ex) {
-            return false;
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("JWT validation failed", e);
         }
+        return false;
     }
 
     public Claims getClaimsFromJWT(String token) {
@@ -55,7 +60,4 @@ public class JwtTokenProvider {
         return getClaimsFromJWT(token).getSubject();
     }
 
-    public Long getClientIdFromJWT(String token) {
-        return getClaimsFromJWT(token).get("clientId", Long.class);
-    }
 }
