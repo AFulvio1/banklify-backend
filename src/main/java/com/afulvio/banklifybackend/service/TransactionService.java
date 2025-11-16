@@ -1,6 +1,8 @@
 package com.afulvio.banklifybackend.service;
 
 import com.afulvio.banklifybackend.exception.InsufficientFundsException;
+import com.afulvio.banklifybackend.mapper.TransactionMapper;
+import com.afulvio.banklifybackend.model.dto.MovementDTO;
 import com.afulvio.banklifybackend.model.dto.TransferDTO;
 import com.afulvio.banklifybackend.model.entity.AccountEntity;
 import com.afulvio.banklifybackend.model.entity.TransactionEntity;
@@ -15,14 +17,16 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
 
     private final AccountRepository accountRepository;
-
     private final TransactionRepository transactionRepository;
+
+    private final TransactionMapper transactionMapper;
 
     @Transactional
     public void executeTransfer(TransferDTO transferDetails) throws AccountNotFoundException, InsufficientFundsException {
@@ -72,9 +76,11 @@ public class TransactionService {
         transactionRepository.save(creditTransaction);
     }
 
-    public List<TransactionEntity> getLatestMovements(String iban, int limit) {
+    public List<MovementDTO> getLatestMovements(String iban, int limit) {
         PageRequest pageRequest = PageRequest.of(0, limit);
-        return transactionRepository.findByAccountIbanOrderByEventTimestampDesc(iban, pageRequest);
+        return transactionRepository.findByAccountIbanOrderByEventTimestampDesc(iban, pageRequest).stream()
+                .map(transactionMapper::toTransactionDTO)
+                .collect(Collectors.toList());
     }
 
 }

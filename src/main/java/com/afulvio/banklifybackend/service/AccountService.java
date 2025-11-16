@@ -1,5 +1,6 @@
 package com.afulvio.banklifybackend.service;
 
+import com.afulvio.banklifybackend.mapper.AccountMapper;
 import com.afulvio.banklifybackend.model.dto.BalanceDTO;
 import com.afulvio.banklifybackend.model.entity.AccountEntity;
 import com.afulvio.banklifybackend.repository.AccountRepository;
@@ -14,14 +15,11 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
 
+    private final AccountMapper accountMapper;
+
     public BalanceDTO getBalance(String iban) throws AccountNotFoundException {
         AccountEntity account = accountRepository.findById(iban)
-                .orElseThrow(() -> new AccountNotFoundException("Conto non trovato per IBAN: " + iban));
-
-        return BalanceDTO.builder()
-                .iban(account.getIban())
-                .ledgerBalance(account.getLedgerBalance())
-                .availableBalance(account.getAvailableBalance())
-                .build();
+                .orElseThrow(() -> new AccountNotFoundException("Account not found for IBAN: " + iban));
+        return accountMapper.toBalanceDTO(account);
     }
 }
