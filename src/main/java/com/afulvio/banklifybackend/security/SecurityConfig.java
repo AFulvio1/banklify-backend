@@ -1,4 +1,4 @@
-package com.afulvio.banklifybackend.configuration;
+package com.afulvio.banklifybackend.security;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,7 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) ->
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized - JWT mancante o non valido")
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized - Missing or invalid JWT")
                         )
                 )
                 .formLogin(AbstractHttpConfigurer::disable);
@@ -58,7 +58,7 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
         source.registerCorsConfiguration("/**", config);

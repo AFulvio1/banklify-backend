@@ -1,4 +1,4 @@
-package com.afulvio.banklifybackend.configuration;
+package com.afulvio.banklifybackend.security;
 
 // Esempio: JwtAuthenticationFilter.java
 

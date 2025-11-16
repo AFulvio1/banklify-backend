@@ -1,4 +1,4 @@
-package com.afulvio.banklifybackend.configuration;
+package com.afulvio.banklifybackend.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
