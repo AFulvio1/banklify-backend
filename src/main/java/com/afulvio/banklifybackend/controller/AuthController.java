@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +48,7 @@ public class AuthController {
             responseCode = "500",
             description = "Internal Server Error - Something went wrong during registration"
     )
-    public ResponseEntity<String> registerUser(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> registerUser(@RequestBody @Valid RegisterRequest request) {
         try {
             authService.registerNewUser(request);
             return new ResponseEntity<>("Registration done", HttpStatus.CREATED);
@@ -76,7 +77,7 @@ public class AuthController {
             responseCode = "500",
             description = "Internal Server Error - Something went wrong during authentication"
     )
-    public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> loginUser(@RequestBody @Valid LoginRequest request) {
         LoginResponse response = authService.authenticateAndGenerateToken(request);
         return ResponseEntity.ok(response);
     }

@@ -1,6 +1,8 @@
 package com.afulvio.banklifybackend.model.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
@@ -15,6 +17,7 @@ public class RegisterRequest {
             example = "Mario",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotBlank
     private String firstName;
 
     @Schema(
@@ -22,6 +25,7 @@ public class RegisterRequest {
             example = "Rossi",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotBlank
     private String lastName;
 
     @Schema(
@@ -29,6 +33,7 @@ public class RegisterRequest {
             example = "MRORSS00A0A0001A",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotBlank
     private String taxCode;
 
     @Schema(
@@ -36,6 +41,7 @@ public class RegisterRequest {
             example = "mario.rossi@example.com",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @Email
     private String email;
 
     @Schema(
@@ -43,6 +49,7 @@ public class RegisterRequest {
             example = "MyStrongP@ssw0rd!",
             requiredMode = Schema.RequiredMode.REQUIRED
     )
+    @NotBlank
     private String password;
 
 }
