@@ -18,6 +18,12 @@ public class ClientEntity {
     @Column(name = "client_id")
     private Long clientId;
 
+    @Column(name = "email", unique = true)
+    private String email;
+
+    @Column(name = "password_hash")
+    private String passwordHash;
+
     @Column(name = "first_name")
     private String firstName;
 
@@ -27,11 +33,23 @@ public class ClientEntity {
     @Column(name = "tax_code", unique = true)
     private String taxCode;
 
-    @Column(name = "email", unique = true)
-    private String email;
+    @Column(name = "street")
+    private String street;
 
-    @Column(name = "password_hash")
-    private String passwordHash;
+    @Column(name = "house_number")
+    private String houseNumber;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "province")
+    private String province;
+
+    @Column(name = "zip_code")
+    private String zipCode;
+
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
     @UpdateTimestamp
     @Column(name = "registration_date")

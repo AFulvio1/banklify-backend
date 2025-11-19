@@ -14,40 +14,29 @@ import java.time.LocalDateTime;
 )
 public class MovementDTO {
 
-    @Schema(
-            description = "The IBAN of the account associated with this movement.",
-            example = "IT60X0542811101000000123456",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+    @Schema(description = "Unique identifier for the transaction.", example = "987654321")
+    private Long TransactionId;
+
+    @Schema(description = "The IBAN of the account associated with this movement.", example = "IT60X0542811101000000123456")
     private String accountIban;
 
     @Schema(
             description = "The timestamp when the transaction event occurred, formatted in ISO 8601 with milliseconds.",
-            example = "2023-10-27T10:30:00.123",
-            requiredMode = Schema.RequiredMode.REQUIRED
+            example = "2023-10-27T10:30:00.123"
     )
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
     private LocalDateTime eventTimestamp;
 
-    @Schema(
-            description = "The amount of the transaction. Positive for incoming, negative for outgoing movements.",
-            example = "-250.00",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+    @Schema(description = "The amount of the transaction. Positive for incoming, negative for outgoing movements.", example = "-250.00")
     private BigDecimal amount;
 
-    @Schema(
-            description = "The type of the transaction (e.g., 'INCOMING_TRANSFER', 'OUTGOING_TRANSFER', 'DEPOSIT', 'WITHDRAWAL').",
-            example = "OUTGOING_TRANSFER",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+    @Schema(description = "The type of the transaction (e.g., 'INCOMING_TRANSFER', 'OUTGOING_TRANSFER')", example = "OUTGOING_TRANSFER")
     private String transactionType;
 
-    @Schema(
-            description = "A detailed description or reason for the transaction.",
-            example = "Monthly gym subscription",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+    @Schema(description = "A detailed description or reason for the transaction.", example = "Monthly gym subscription")
     private String description;
+
+    @Schema(description = "The name of the counterparty involved in the transaction.", example = "Fitness Center Ltd.")
+    private String counterpartyName;
 
 }

@@ -20,15 +20,13 @@ public class LoginResponse {
 
     @Schema(
             description = "The primary International Bank Account Number (IBAN) associated with the authenticated user.",
-            example = "IT60X0542811101000000123456",
-            requiredMode = Schema.RequiredMode.REQUIRED
+            example = "IT60X0542811101000000123456"
     )
     private String iban;
 
     @Schema(
             description = "The first name of the authenticated user.",
-            example = "Mario",
-            requiredMode = Schema.RequiredMode.REQUIRED
+            example = "Mario"
     )
     private String firstName;
 

@@ -3,6 +3,7 @@ package com.afulvio.banklifybackend.model.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -12,44 +13,53 @@ import lombok.Data;
 )
 public class RegisterRequest {
 
-    @Schema(
-            description = "User's first name",
-            example = "Mario",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotBlank
+    @Schema(description = "User's first name", example = "Mario")
+    @NotBlank(message = "First name is required")
     private String firstName;
 
-    @Schema(
-            description = "User's last name",
-            example = "Rossi",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotBlank
+    @Schema(description = "User's last name", example = "Rossi")
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @Schema(
-            description = "User's Italian Tax Code (Codice Fiscale)",
-            example = "MRORSS00A0A0001A",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotBlank
-    private String taxCode;
-
-    @Schema(
-            description = "User's email address (must be unique)",
-            example = "mario.rossi@example.com",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @Email
+    @Schema(description = "User's email address (must be unique)", example = "mario.rossi@example.com")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
 
-    @Schema(
-            description = "User's password (min 8 characters, strong password recommended)",
-            example = "MyStrongP@ssw0rd!",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
-    @NotBlank
+    @Schema(description = "User's password (min 8 characters)", example = "StrongP@ssw0rd!")
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
+
+    @Schema(description = "Italian Tax Code (Codice Fiscale)", example = "RSSMRA80A01H501U")
+    @NotBlank(message = "Tax code is required")
+    @Size(min = 16, max = 16, message = "Tax code must be exactly 16 characters")
+    private String taxCode;
+
+    @Schema(description = "Street name", example = "Via Roma")
+    @NotBlank(message = "Street is required")
+    private String street;
+
+    @Schema(description = "House number", example = "10")
+    @NotBlank(message = "House number is required")
+    private String houseNumber;
+
+    @Schema(description = "City of residence", example = "Milano")
+    @NotBlank(message = "City is required")
+    private String city;
+
+    @Schema(description = "Province abbreviation (2 chars)", example = "MI")
+    @NotBlank(message = "Province is required")
+    @Size(min = 2, max = 2, message = "Province must be exactly 2 characters")
+    private String province;
+
+    @Schema(description = "Postal/Zip code", example = "20121")
+    @NotBlank(message = "Zip code is required")
+    @Size(min = 5, max = 5, message = "Zip code must be exactly 5 digits")
+    private String zipCode;
+
+    @Schema(description = "User's phone number", example = "+393331234567")
+    @NotBlank(message = "Phone number is required")
+    private String phoneNumber;
 
 }

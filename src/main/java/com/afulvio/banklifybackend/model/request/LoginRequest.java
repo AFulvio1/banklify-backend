@@ -12,19 +12,11 @@ import lombok.Data;
 )
 public class LoginRequest {
 
-    @Schema(
-            description = "User's email address",
-            example = "mario.rossi@example.com",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+    @Schema(description = "User's email address", example = "mario.rossi@example.com")
     @Email
     private String email;
 
-    @Schema(
-            description = "User's password",
-            example = "MyStrongP@ssw0rd!",
-            requiredMode = Schema.RequiredMode.REQUIRED
-    )
+    @Schema(description = "User's password", example = "MyStrongP@ssw0rd!")
     @NotBlank
     private String password;
 
