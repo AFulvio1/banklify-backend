@@ -17,7 +17,7 @@ public class LoginRequest {
     private String email;
 
     @Schema(description = "User's password", example = "MyStrongP@ssw0rd!")
-    @NotBlank
+    @NotBlank(message = "{error.validation.required}")
     private String password;
 
 }
