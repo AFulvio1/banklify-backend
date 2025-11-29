@@ -66,7 +66,52 @@ public class TransactionController {
                     schema = @Schema(implementation = Map.class),
                     examples = @ExampleObject(value = "{\"error\": \"Internal error during transfer processing.\"}"))
     )
-    public ResponseEntity<?> executeTransfer(@Valid @RequestBody TransferDTO transferDTO) {
+    public ResponseEntity<?> executeInternalTransfer(@Valid @RequestBody TransferDTO transferDTO) {
+        return getResponseEntity(transferDTO);
+    }
+
+    @PostMapping("/external/transfer")
+    @Operation(
+            summary = "Execute a bank transfer",
+            description = "Processes an outgoing bank transfer from the sender's IBAN to the receiver's IBAN. Requires valid authentication and sufficient funds."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Transfer executed successfully",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Map.class),
+                    examples = @ExampleObject(value = "{\"message\": \"Transfer successfully completed.\"}"))
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "Bad Request - Invalid IBAN, amount, or other transfer details",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Map.class),
+                    examples = @ExampleObject(value = "{\"error\": \"Account not found or invalid transfer details.\"}"))
+    )
+    @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Insufficient funds or user not authorized to transfer from sender IBAN",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Map.class),
+                    examples = @ExampleObject(value = "{\"error\": \"Insufficient funds.\"}"))
+    )
+    @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error - Unexpected error during transfer processing",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Map.class),
+                    examples = @ExampleObject(value = "{\"error\": \"Internal error during transfer processing.\"}"))
+    )
+    public ResponseEntity<?> executeExternalTransfer(@Valid @RequestBody TransferDTO transferDTO) {
+        if (transferDTO.getSenderName() == null || transferDTO.getSenderName().trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "The sender name must be provided for external transfers."));
+        }
+        return getResponseEntity(transferDTO);
+    }
+
+    private ResponseEntity<?> getResponseEntity(@RequestBody @Valid TransferDTO transferDTO) {
         try {
             transactionService.executeTransfer(transferDTO);
             return ResponseEntity.ok(Map.of("message", "Transfer successfully completed."));

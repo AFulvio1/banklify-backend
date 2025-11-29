@@ -1,6 +1,6 @@
 package com.afulvio.banklifybackend.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.afulvio.banklifybackend.model.TransactionType;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,7 +19,18 @@ public class TransactionEntity {
     @Column(name = "account_iban", nullable = false)
     private String accountIban;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    @Column(name = "sender_iban", nullable = false)
+    private String senderIban;
+
+    @Column(name = "sender_name", nullable = false)
+    private String senderName;
+
+    @Column(name = "receiver_iban", nullable = false)
+    private String receiverIban;
+
+    @Column(name = "receiver_name", nullable = false)
+    private String receiverName;
+
     @Column(name = "event_timestamp", nullable = false)
     private LocalDateTime eventTimestamp;
 
@@ -27,7 +38,8 @@ public class TransactionEntity {
     private BigDecimal amount;
 
     @Column(name = "transaction_type", nullable = false)
-    private String transactionType;
+    @Enumerated(EnumType.STRING)
+    private TransactionType transactionType;
 
     @Column(name = "description")
     private String description;

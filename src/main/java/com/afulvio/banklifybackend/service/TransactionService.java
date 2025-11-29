@@ -2,9 +2,11 @@ package com.afulvio.banklifybackend.service;
 
 import com.afulvio.banklifybackend.exception.InsufficientFundsException;
 import com.afulvio.banklifybackend.mapper.TransactionMapper;
+import com.afulvio.banklifybackend.model.TransactionType;
 import com.afulvio.banklifybackend.model.dto.MovementDTO;
 import com.afulvio.banklifybackend.model.dto.TransferDTO;
 import com.afulvio.banklifybackend.model.entity.AccountEntity;
+import com.afulvio.banklifybackend.model.entity.ClientEntity;
 import com.afulvio.banklifybackend.model.entity.TransactionEntity;
 import com.afulvio.banklifybackend.repository.AccountRepository;
 import com.afulvio.banklifybackend.repository.TransactionRepository;
@@ -17,6 +19,7 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,46 +38,65 @@ public class TransactionService {
         String receiverIban = transferDetails.getReceiverIban();
         BigDecimal amount = transferDetails.getAmount();
 
-        if (senderIban.equals(receiverIban)) {
-            throw new IllegalArgumentException("Mittente e Destinatario non possono essere lo stesso conto.");
+        Optional<AccountEntity> senderOpt = accountRepository.findByIbanAndStatus(senderIban, "ACTIVE");
+        Optional<AccountEntity> receiverOpt = accountRepository.findByIbanAndStatus(receiverIban, "ACTIVE");
+
+        if (senderOpt.isEmpty() && receiverOpt.isEmpty()) {
+            throw new AccountNotFoundException("Né il mittente né il destinatario appartengono a questa banca.");
         }
-
-        AccountEntity sender = accountRepository.findByIbanAndStatus(senderIban, "ACTIVE")
-                .orElseThrow(() -> new AccountNotFoundException("Conto mittente non trovato o inattivo."));
-
-        AccountEntity receiver = accountRepository.findByIbanAndStatus(receiverIban, "ACTIVE")
-                .orElseThrow(() -> new AccountNotFoundException("Conto destinatario non trovato o inattivo."));
-
-        if (sender.getAvailableBalance().compareTo(amount) < 0) {
-            throw new InsufficientFundsException("Fondi insufficienti per l'operazione.");
-        }
-
-        sender.setLedgerBalance(sender.getLedgerBalance().subtract(amount));
-        sender.setAvailableBalance(sender.getAvailableBalance().subtract(amount));
-        accountRepository.save(sender);
-
-        receiver.setLedgerBalance(receiver.getLedgerBalance().add(amount));
-        receiver.setAvailableBalance(receiver.getAvailableBalance().add(amount));
-        accountRepository.save(receiver);
 
         LocalDateTime now = LocalDateTime.now();
 
-        TransactionEntity debitTransaction = new TransactionEntity();
-        debitTransaction.setAccountIban(senderIban);
-        debitTransaction.setAmount(amount.negate());
-        debitTransaction.setTransactionType("OUTGOING_TRANSFER");
-        debitTransaction.setDescription("Bonifico a: " + receiverIban + " - Causale: " + transferDetails.getDescription());
-        debitTransaction.setEventTimestamp(now);
-        transactionRepository.save(debitTransaction);
+        if (senderOpt.isPresent()) {
+            AccountEntity sender = senderOpt.get();
 
-        TransactionEntity creditTransaction = new TransactionEntity();
-        creditTransaction.setAccountIban(receiverIban);
-        creditTransaction.setAmount(amount);
-        creditTransaction.setTransactionType("INCOMING_TRANSFER");
-        creditTransaction.setDescription("Bonifico da: " + senderIban + " - Causale: " + transferDetails.getDescription());
-        creditTransaction.setEventTimestamp(now);
-        transactionRepository.save(creditTransaction);
+            if (sender.getAvailableBalance().compareTo(amount) < 0) {
+                throw new InsufficientFundsException("Fondi insufficienti per l'operazione.");
+            }
+
+            sender.setLedgerBalance(sender.getLedgerBalance().subtract(amount));
+            sender.setAvailableBalance(sender.getAvailableBalance().subtract(amount));
+            accountRepository.save(sender);
+
+            TransactionEntity debitTransaction = new TransactionEntity();
+            debitTransaction.setAccountIban(senderIban);
+            debitTransaction.setAmount(amount.negate());
+            debitTransaction.setTransactionType(receiverOpt.isPresent() ? TransactionType.OUTGOING_INTERNAL: TransactionType.OUTGOING_EXTERNAL);
+            debitTransaction.setSenderIban(senderIban);
+            debitTransaction.setSenderName(getFullName(sender.getClient()));
+            debitTransaction.setReceiverIban(receiverIban);
+            debitTransaction.setReceiverName(transferDetails.getReceiverName());
+            debitTransaction.setDescription(transferDetails.getDescription());
+            debitTransaction.setEventTimestamp(now);
+            transactionRepository.save(debitTransaction);
+        }
+
+
+        if (receiverOpt.isPresent()) {
+            AccountEntity receiver = receiverOpt.get();
+
+            receiver.setLedgerBalance(receiver.getLedgerBalance().add(amount));
+            receiver.setAvailableBalance(receiver.getAvailableBalance().add(amount));
+            accountRepository.save(receiver);
+
+            TransactionEntity creditTransaction = new TransactionEntity();
+            creditTransaction.setAccountIban(receiverIban);
+            creditTransaction.setAmount(amount);
+            creditTransaction.setTransactionType(senderOpt.isPresent() ? TransactionType.INCOMING_INTERNAL: TransactionType.INCOMING_EXTERNAL);
+            creditTransaction.setSenderIban(transferDetails.getSenderIban());
+            creditTransaction.setSenderName(transferDetails.getSenderName());
+            creditTransaction.setReceiverIban(receiverIban);
+            creditTransaction.setReceiverName(getFullName(receiver.getClient()));
+            creditTransaction.setDescription(transferDetails.getDescription());
+            creditTransaction.setEventTimestamp(now);
+            transactionRepository.save(creditTransaction);
+        }
     }
+
+    private String getFullName(ClientEntity client) {
+        return client.getFirstName() + " " + client.getLastName();
+    }
+
 
     public List<MovementDTO> getLatestMovements(String iban, int limit) {
         PageRequest pageRequest = PageRequest.of(0, limit);
