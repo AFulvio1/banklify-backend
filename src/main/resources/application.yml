@@ -11,10 +11,9 @@ jwt:
     secret: c2VjcmV0X2tleV9mb3JfZmluYW5jaWFsX2FwcGxpY2F0aW9uX3Bhc3N3b3JkXzU2NzhJSkdEMjMzQUJDIQ
     expiration: 3600000
 
-#logging:
-#  level:
-#    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
-#    org.springframework.web.servlet.DispatcherServlet: DEBUG
-#    org.springframework.security: DEBUG
-#    org.springframework.security.web.FilterChainProxy: DEBUG
-#    com.afulvio.banklifybackend: DEBUG
+logging:
+  level:
+    root: INFO
+    com.afulvio.banklifybackend: INFO
+    org.springframework.web: INFO
+    org.hibernate: ERROR

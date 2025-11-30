@@ -13,11 +13,11 @@ import lombok.Data;
 public class LoginRequest {
 
     @Schema(description = "User's email address", example = "mario.rossi@example.com")
-    @Email
+    @Email(message = "error.validation.required")
     private String email;
 
     @Schema(description = "User's password", example = "MyStrongP@ssw0rd!")
-    @NotBlank(message = "{error.validation.required}")
+    @NotBlank(message = "error.validation.required")
     private String password;
 
 }

@@ -19,7 +19,7 @@ public class AccountService {
 
     public BalanceDTO getBalance(String iban) throws AccountNotFoundException {
         AccountEntity account = accountRepository.findById(iban)
-                .orElseThrow(() -> new AccountNotFoundException("Account not found for IBAN: " + iban));
+                .orElseThrow(() -> new AccountNotFoundException("error.account.iban.not.found"));
         return accountMapper.toBalanceDTO(account);
     }
 }

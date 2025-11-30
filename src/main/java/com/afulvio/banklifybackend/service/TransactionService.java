@@ -38,11 +38,15 @@ public class TransactionService {
         String receiverIban = transferDetails.getReceiverIban();
         BigDecimal amount = transferDetails.getAmount();
 
+        if (senderIban.equals(receiverIban)) {
+            throw new IllegalArgumentException("error.transfer.same.account");
+        }
+
         Optional<AccountEntity> senderOpt = accountRepository.findByIbanAndStatus(senderIban, "ACTIVE");
         Optional<AccountEntity> receiverOpt = accountRepository.findByIbanAndStatus(receiverIban, "ACTIVE");
 
         if (senderOpt.isEmpty() && receiverOpt.isEmpty()) {
-            throw new AccountNotFoundException("Né il mittente né il destinatario appartengono a questa banca.");
+            throw new AccountNotFoundException("error.transfer.parties.not.found");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -51,7 +55,7 @@ public class TransactionService {
             AccountEntity sender = senderOpt.get();
 
             if (sender.getAvailableBalance().compareTo(amount) < 0) {
-                throw new InsufficientFundsException("Fondi insufficienti per l'operazione.");
+                throw new InsufficientFundsException("error.insufficient.funds");
             }
 
             sender.setLedgerBalance(sender.getLedgerBalance().subtract(amount));
@@ -79,12 +83,15 @@ public class TransactionService {
             receiver.setAvailableBalance(receiver.getAvailableBalance().add(amount));
             accountRepository.save(receiver);
 
+            String senderName = senderOpt.map(accountEntity -> getFullName(accountEntity.getClient()))
+                    .orElseGet(transferDetails::getSenderName);
+
             TransactionEntity creditTransaction = new TransactionEntity();
             creditTransaction.setAccountIban(receiverIban);
             creditTransaction.setAmount(amount);
             creditTransaction.setTransactionType(senderOpt.isPresent() ? TransactionType.INCOMING_INTERNAL: TransactionType.INCOMING_EXTERNAL);
-            creditTransaction.setSenderIban(transferDetails.getSenderIban());
-            creditTransaction.setSenderName(transferDetails.getSenderName());
+            creditTransaction.setSenderIban(senderIban);
+            creditTransaction.setSenderName(senderName);
             creditTransaction.setReceiverIban(receiverIban);
             creditTransaction.setReceiverName(getFullName(receiver.getClient()));
             creditTransaction.setDescription(transferDetails.getDescription());
@@ -98,8 +105,8 @@ public class TransactionService {
     }
 
 
-    public List<MovementDTO> getLatestMovements(String iban, int limit) {
-        PageRequest pageRequest = PageRequest.of(0, limit);
+    public List<MovementDTO> getLatestMovements(String iban, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
         return transactionRepository.findByAccountIbanOrderByEventTimestampDesc(iban, pageRequest).stream()
                 .map(transactionMapper::toTransactionDTO)
                 .collect(Collectors.toList());

@@ -4,6 +4,7 @@ import com.afulvio.banklifybackend.exception.InsufficientFundsException;
 import com.afulvio.banklifybackend.model.dto.MovementDTO;
 import com.afulvio.banklifybackend.model.dto.TransferDTO;
 import com.afulvio.banklifybackend.service.TransactionService;
+import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -12,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,14 +38,14 @@ public class TransactionController {
             description = "Transfer executed successfully",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Map.class),
-                    examples = @ExampleObject(value = "{\"message\": \"Transfer successfully completed.\"}"))
+                    examples = @ExampleObject(value = "{\"message\": \"Transfer successfully completed\"}"))
     )
     @ApiResponse(
             responseCode = "400",
             description = "Bad Request - Invalid IBAN, amount, or other transfer details",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Map.class),
-                    examples = @ExampleObject(value = "{\"error\": \"Account not found or invalid transfer details.\"}"))
+                    examples = @ExampleObject(value = "{\"error\": \"Account not found or invalid transfer details\"}"))
     )
     @ApiResponse(
             responseCode = "401",
@@ -57,16 +57,16 @@ public class TransactionController {
             description = "Forbidden - Insufficient funds or user not authorized to transfer from sender IBAN",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Map.class),
-                    examples = @ExampleObject(value = "{\"error\": \"Insufficient funds.\"}"))
+                    examples = @ExampleObject(value = "{\"error\": \"Insufficient funds\"}"))
     )
     @ApiResponse(
             responseCode = "500",
             description = "Internal Server Error - Unexpected error during transfer processing",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Map.class),
-                    examples = @ExampleObject(value = "{\"error\": \"Internal error during transfer processing.\"}"))
+                    examples = @ExampleObject(value = "{\"error\": \"Internal error during transfer processing\"}"))
     )
-    public ResponseEntity<?> executeInternalTransfer(@Valid @RequestBody TransferDTO transferDTO) {
+    public ResponseEntity<?> executeInternalTransfer(@Valid @RequestBody TransferDTO transferDTO) throws InsufficientFundsException, AccountNotFoundException {
         return getResponseEntity(transferDTO);
     }
 
@@ -80,49 +80,39 @@ public class TransactionController {
             description = "Transfer executed successfully",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Map.class),
-                    examples = @ExampleObject(value = "{\"message\": \"Transfer successfully completed.\"}"))
+                    examples = @ExampleObject(value = "{\"message\": \"Transfer successfully completed\"}"))
     )
     @ApiResponse(
             responseCode = "400",
             description = "Bad Request - Invalid IBAN, amount, or other transfer details",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Map.class),
-                    examples = @ExampleObject(value = "{\"error\": \"Account not found or invalid transfer details.\"}"))
+                    examples = @ExampleObject(value = "{\"error\": \"Account not found or invalid transfer details\"}"))
     )
     @ApiResponse(
             responseCode = "403",
             description = "Forbidden - Insufficient funds or user not authorized to transfer from sender IBAN",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Map.class),
-                    examples = @ExampleObject(value = "{\"error\": \"Insufficient funds.\"}"))
+                    examples = @ExampleObject(value = "{\"error\": \"Insufficient funds\"}"))
     )
     @ApiResponse(
             responseCode = "500",
             description = "Internal Server Error - Unexpected error during transfer processing",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = Map.class),
-                    examples = @ExampleObject(value = "{\"error\": \"Internal error during transfer processing.\"}"))
+                    examples = @ExampleObject(value = "{\"error\": \"Internal error during transfer processing\"}"))
     )
-    public ResponseEntity<?> executeExternalTransfer(@Valid @RequestBody TransferDTO transferDTO) {
-        if (transferDTO.getSenderName() == null || transferDTO.getSenderName().trim().isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "The sender name must be provided for external transfers."));
+    public ResponseEntity<?> executeExternalTransfer(@Valid @RequestBody TransferDTO transferDTO) throws InsufficientFundsException, AccountNotFoundException {
+        if (StringUtils.isBlank(transferDTO.getSenderName())) {
+            throw new IllegalArgumentException("error.transfer.external.sender.name.not.found");
         }
         return getResponseEntity(transferDTO);
     }
 
-    private ResponseEntity<?> getResponseEntity(@RequestBody @Valid TransferDTO transferDTO) {
-        try {
-            transactionService.executeTransfer(transferDTO);
-            return ResponseEntity.ok(Map.of("message", "Transfer successfully completed."));
-        } catch (AccountNotFoundException | IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
-        } catch (InsufficientFundsException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Internal error during transfer processing."));
-        }
+    private ResponseEntity<?> getResponseEntity(@RequestBody @Valid TransferDTO transferDTO) throws InsufficientFundsException, AccountNotFoundException {
+        transactionService.executeTransfer(transferDTO);
+        return ResponseEntity.ok(Map.of("message", "transfer.success"));
     }
 
     @GetMapping("/{iban}/movements")
@@ -156,9 +146,10 @@ public class TransactionController {
     )
     public ResponseEntity<List<MovementDTO>> getAccountMovements(
             @PathVariable String iban,
-            @RequestParam(defaultValue = "10") int limit
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        List<MovementDTO> movements = transactionService.getLatestMovements(iban, limit);
+        List<MovementDTO> movements = transactionService.getLatestMovements(iban, page, size);
         return ResponseEntity.ok(movements);
     }
 }

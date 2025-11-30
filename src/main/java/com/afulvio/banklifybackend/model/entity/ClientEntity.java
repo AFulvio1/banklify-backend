@@ -2,8 +2,8 @@ package com.afulvio.banklifybackend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,11 +30,14 @@ public class ClientEntity {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
     @Column(name = "tax_code", unique = true)
     private String taxCode;
 
-    @Column(name = "street")
-    private String street;
+    @Column(name = "address")
+    private String address;
 
     @Column(name = "house_number")
     private String houseNumber;
@@ -51,7 +54,6 @@ public class ClientEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @UpdateTimestamp
     @Column(name = "registration_date")
     private LocalDateTime registrationDate;
 

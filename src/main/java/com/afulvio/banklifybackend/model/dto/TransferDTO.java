@@ -19,7 +19,7 @@ public class TransferDTO {
             description = "International Bank Account Number (IBAN) of the sender's account. This must be a valid and accessible account for the authenticated user.",
             example = "IT60X0542811101000000123456"
     )
-    @NotBlank(message = "{error.validation.required}")
+    @NotBlank(message = "error.validation.required")
     private String senderIban;
 
     @Schema(
@@ -32,21 +32,21 @@ public class TransferDTO {
             description = "International Bank Account Number (IBAN) of the receiver's account. This must be a valid IBAN.",
             example = "IT60Y0542811101000000654321"
     )
-    @NotBlank(message = "{error.validation.required}")
+    @NotBlank(message = "error.validation.required")
     private String receiverIban;
 
     @Schema(
             description = "Name of the receiver of the transfer.",
             example = "Giovanni Rossi"
     )
-    @NotBlank(message = "{error.validation.required}")
+    @NotBlank(message = "error.validation.required")
     private String receiverName;
 
     @Schema(
             description = "The amount to transfer. Must be a positive decimal number.",
             example = "150.75"
     )
-    @NotNull
+    @NotNull(message = "error.validation.required")
     @Positive
     private BigDecimal amount;
 
@@ -54,6 +54,6 @@ public class TransferDTO {
             description = "A description or reason for the transfer.",
             example = "Payment for monthly rent"
     )
-    @NotBlank(message = "{error.validation.required}")
+    @NotBlank(message = "error.validation.required")
     private String description;
 }

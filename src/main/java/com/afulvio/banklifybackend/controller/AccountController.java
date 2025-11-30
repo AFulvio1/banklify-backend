@@ -53,12 +53,8 @@ public class AccountController {
             responseCode = "500",
             description = "Internal Server Error - Something went wrong on the server side"
     )
-    public ResponseEntity<BalanceDTO> getAccountBalance(@PathVariable String iban) {
-        try {
-            BalanceDTO balance = accountService.getBalance(iban);
-            return ResponseEntity.ok(balance);
-        } catch (AccountNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<BalanceDTO> getAccountBalance(@PathVariable String iban) throws AccountNotFoundException {
+        BalanceDTO balance = accountService.getBalance(iban);
+        return ResponseEntity.ok(balance);
     }
 }

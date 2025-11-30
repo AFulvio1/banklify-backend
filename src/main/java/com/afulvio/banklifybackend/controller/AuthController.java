@@ -3,7 +3,7 @@ package com.afulvio.banklifybackend.controller;
 import com.afulvio.banklifybackend.model.request.LoginRequest;
 import com.afulvio.banklifybackend.model.request.RegisterRequest;
 import com.afulvio.banklifybackend.model.response.LoginResponse;
-import com.afulvio.banklifybackend.service.AuthService;
+import com.afulvio.banklifybackend.service.ClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -19,13 +19,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication", description = "APIs for user registration and authentication (login).")
 public class AuthController {
 
-    private final AuthService authService;
+    private final ClientService clientService;
 
     @PostMapping("/register")
     @Operation(
@@ -34,27 +36,23 @@ public class AuthController {
     )
     @ApiResponse(
             responseCode = "201",
-            description = "User registered successfully",
+            description = "Registration successful",
             content = @Content(mediaType = "text/plain", schema = @Schema(type = "string"),
                     examples = @ExampleObject(value = "Registration done"))
     )
     @ApiResponse(
             responseCode = "400",
-            description = "Bad Request - Invalid input or user already exists (e.g., email taken)",
+            description = "Invalid input or user already exists",
             content = @Content(mediaType = "text/plain", schema = @Schema(type = "string"),
                     examples = @ExampleObject(value = "Email already registered"))
     )
     @ApiResponse(
             responseCode = "500",
-            description = "Internal Server Error - Something went wrong during registration"
+            description = "An internal server error occurred"
     )
-    public ResponseEntity<String> registerUser(@RequestBody @Valid RegisterRequest request) {
-        try {
-            authService.registerNewUser(request);
-            return new ResponseEntity<>("Registration done", HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<Map<String, String>> registerUser(@RequestBody @Valid RegisterRequest request) {
+        clientService.registerNewUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "registration.success"));
     }
 
     @PostMapping("/login")
@@ -69,16 +67,16 @@ public class AuthController {
     )
     @ApiResponse(
             responseCode = "401",
-            description = "Unauthorized - Invalid credentials (email or password)",
+            description = "Unauthorized - Invalid credentials",
             content = @Content(mediaType = "text/plain", schema = @Schema(type = "string"),
                     examples = @ExampleObject(value = "Invalid email or password"))
     )
     @ApiResponse(
             responseCode = "500",
-            description = "Internal Server Error - Something went wrong during authentication"
+            description = "An internal server error occurred"
     )
     public ResponseEntity<LoginResponse> loginUser(@RequestBody @Valid LoginRequest request) {
-        LoginResponse response = authService.authenticateAndGenerateToken(request);
+        LoginResponse response = clientService.authenticateAndGenerateToken(request);
         return ResponseEntity.ok(response);
     }
 }

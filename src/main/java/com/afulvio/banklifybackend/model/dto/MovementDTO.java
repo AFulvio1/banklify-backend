@@ -17,9 +17,6 @@ public class MovementDTO {
     @Schema(description = "Unique identifier for the transaction.", example = "987654321")
     private Long TransactionId;
 
-    @Schema(description = "The IBAN of the account associated with this movement.", example = "IT60X0542811101000000123456")
-    private String accountIban;
-
     @Schema(
             description = "The timestamp when the transaction event occurred, formatted in ISO 8601 with milliseconds.",
             example = "2023-10-27T10:30:00.123"
@@ -29,9 +26,6 @@ public class MovementDTO {
 
     @Schema(description = "The amount of the transaction. Positive for incoming, negative for outgoing movements.", example = "-250.00")
     private BigDecimal amount;
-
-    @Schema(description = "The type of the transaction (e.g., 'INCOMING_TRANSFER', 'OUTGOING_TRANSFER')", example = "OUTGOING_TRANSFER")
-    private String transactionType;
 
     @Schema(description = "A detailed description or reason for the transaction.", example = "Monthly gym subscription")
     private String description;
