@@ -12,6 +12,7 @@ import com.afulvio.banklifybackend.repository.AccountRepository;
 import com.afulvio.banklifybackend.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TransactionService {
 
     private final AccountRepository accountRepository;
@@ -33,6 +35,7 @@ public class TransactionService {
 
     @Transactional
     public void executeTransfer(TransferDTO transferDetails) throws AccountNotFoundException, InsufficientFundsException {
+        log.info("Executing transfer: {}", transferDetails);
 
         String senderIban = transferDetails.getSenderIban();
         String receiverIban = transferDetails.getReceiverIban();
@@ -98,6 +101,8 @@ public class TransactionService {
             creditTransaction.setEventTimestamp(now);
             transactionRepository.save(creditTransaction);
         }
+
+        log.info("Transfer executed successfully");
     }
 
     private String getFullName(ClientEntity client) {
@@ -106,6 +111,7 @@ public class TransactionService {
 
 
     public List<MovementDTO> getLatestMovements(String iban, int page, int size) {
+        log.info("Fetching latest movements for IBAN: {}, page: {}, size: {}", iban, page, size);
         PageRequest pageRequest = PageRequest.of(page, size);
         return transactionRepository.findByAccountIbanOrderByEventTimestampDesc(iban, pageRequest).stream()
                 .map(transactionMapper::toTransactionDTO)

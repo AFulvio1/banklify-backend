@@ -65,7 +65,7 @@ public class RegisterRequest {
     @NotBlank(message = "error.validation.required")
     private String phoneNumber;
 
-    @Schema(description = "User's birth date", example = "01/01/1980")
+    @Schema(description = "User's birth date", example = "1980-01-01")
     @NotNull(message = "error.validation.required")
     private LocalDate birthDate;
 
