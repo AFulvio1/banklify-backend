@@ -1,6 +1,8 @@
 package com.afulvio.banklifybackend.service;
 
+import com.afulvio.banklifybackend.exception.AccountNotFoundException;
 import com.afulvio.banklifybackend.exception.InsufficientFundsException;
+import com.afulvio.banklifybackend.exception.SameAccountTransferException;
 import com.afulvio.banklifybackend.mapper.TransactionMapper;
 import com.afulvio.banklifybackend.model.TransactionType;
 import com.afulvio.banklifybackend.model.dto.MovementDTO;
@@ -16,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,7 +43,7 @@ public class TransactionService {
         BigDecimal amount = transferDetails.getAmount();
 
         if (senderIban.equals(receiverIban)) {
-            throw new IllegalArgumentException("error.transfer.same.account");
+            throw new SameAccountTransferException("error.transfer.same.account");
         }
 
         Optional<AccountEntity> senderOpt = accountRepository.findByIbanAndStatus(senderIban, "ACTIVE");
@@ -115,7 +116,7 @@ public class TransactionService {
         PageRequest pageRequest = PageRequest.of(page, size);
         return transactionRepository.findByAccountIbanOrderByEventTimestampDesc(iban, pageRequest).stream()
                 .map(transactionMapper::toTransactionDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
 }

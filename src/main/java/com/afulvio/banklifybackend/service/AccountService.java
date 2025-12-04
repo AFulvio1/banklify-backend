@@ -1,5 +1,6 @@
 package com.afulvio.banklifybackend.service;
 
+import com.afulvio.banklifybackend.exception.AccountNotFoundException;
 import com.afulvio.banklifybackend.mapper.AccountMapper;
 import com.afulvio.banklifybackend.model.dto.BalanceDTO;
 import com.afulvio.banklifybackend.model.entity.AccountEntity;
@@ -8,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.AccountNotFoundException;
 
 @Slf4j
 @Service

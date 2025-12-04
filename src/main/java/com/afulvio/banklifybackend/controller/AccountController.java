@@ -1,5 +1,6 @@
 package com.afulvio.banklifybackend.controller;
 
+import com.afulvio.banklifybackend.exception.AccountNotFoundException;
 import com.afulvio.banklifybackend.model.dto.BalanceDTO;
 import com.afulvio.banklifybackend.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.security.auth.login.AccountNotFoundException;
 
 @RestController
 @RequestMapping("/api/v1/accounts")

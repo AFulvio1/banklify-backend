@@ -57,7 +57,7 @@ public class AuthService {
         log.info("Authenticating user with email: {}", request.getEmail());
 
         ClientEntity client = clientRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ClientNotFoundException("error.auth.invalid.credentials"));
+                .orElseThrow(() -> new ClientNotFoundException("error.user.not.found"));
 
         if (!passwordEncoder.matches(request.getPassword(), client.getPasswordHash())) {
             throw new InvalidCredentialException("error.auth.invalid.credentials");

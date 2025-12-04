@@ -1,6 +1,7 @@
 package com.afulvio.banklifybackend.controller;
 
 import com.afulvio.banklifybackend.exception.InsufficientFundsException;
+import com.afulvio.banklifybackend.exception.MissingSenderNameException;
 import com.afulvio.banklifybackend.model.dto.MovementDTO;
 import com.afulvio.banklifybackend.model.dto.TransferDTO;
 import com.afulvio.banklifybackend.service.TransactionService;
@@ -28,7 +29,7 @@ public class TransactionController {
             summary = "Execute a bank transfer",
             description = "Processes an outgoing bank transfer from the sender's IBAN to the receiver's IBAN. Requires valid authentication and sufficient funds"
     )
-    public ResponseEntity<String> executeInternalTransfer(@Valid @RequestBody TransferDTO transferDTO) throws InsufficientFundsException, AccountNotFoundException {
+    public ResponseEntity<String> executeInternalTransfer(@Valid @RequestBody TransferDTO transferDTO) throws InsufficientFundsException {
         return getResponseEntity(transferDTO);
     }
 
@@ -37,14 +38,14 @@ public class TransactionController {
             summary = "Execute a bank transfer",
             description = "Processes an outgoing bank transfer from the sender's IBAN to the receiver's IBAN. Requires valid authentication and sufficient funds"
     )
-    public ResponseEntity<String> executeExternalTransfer(@Valid @RequestBody TransferDTO transferDTO) throws InsufficientFundsException, AccountNotFoundException {
+    public ResponseEntity<String> executeExternalTransfer(@Valid @RequestBody TransferDTO transferDTO) throws InsufficientFundsException {
         if (StringUtils.isBlank(transferDTO.getSenderName())) {
-            throw new IllegalArgumentException("error.transfer.external.sender.name.not.found");
+            throw new MissingSenderNameException("error.transfer.external.sender.name.not.found");
         }
         return getResponseEntity(transferDTO);
     }
 
-    private ResponseEntity<String> getResponseEntity(@RequestBody @Valid TransferDTO transferDTO) throws InsufficientFundsException, AccountNotFoundException {
+    private ResponseEntity<String> getResponseEntity(@RequestBody @Valid TransferDTO transferDTO) throws InsufficientFundsException {
         transactionService.executeTransfer(transferDTO);
         return ResponseEntity.ok("Transfer successfully completed");
     }
