@@ -82,18 +82,18 @@ class BankFlowIntegrationTest {
         String[] errors = errorString.split(", ");
 
         assertThat(errors).containsExactlyInAnyOrder(
-                "Il campo firstName e obbligatorio",
-                "Il campo lastName e obbligatorio",
-                "Il campo email e obbligatorio",
-                "Il campo password e obbligatorio",
-                "Il campo taxCode e obbligatorio",
-                "Il campo address e obbligatorio",
-                "Il campo houseNumber e obbligatorio",
-                "Il campo city e obbligatorio",
-                "Il campo province e obbligatorio",
-                "Il campo zipCode e obbligatorio",
-                "Il campo phoneNumber e obbligatorio",
-                "Il campo birthDate e obbligatorio"
+                "This field firstName is required",
+                "This field lastName is required",
+                "This field email is required",
+                "This field password is required",
+                "This field taxCode is required",
+                "This field address is required",
+                "This field houseNumber is required",
+                "This field city is required",
+                "This field province is required",
+                "This field zipCode is required",
+                "This field phoneNumber is required",
+                "This field birthDate is required"
         );
     }
 
@@ -172,7 +172,7 @@ class BankFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Il campo birthDate e obbligatorio"));
+                .andExpect(jsonPath("$.error").value("This field birthDate is required"));
     }
 
     @Test
@@ -193,7 +193,7 @@ class BankFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("L'email e' gia' in uso"));
+                .andExpect(jsonPath("$.error").value("The email is already in use"));
     }
 
     @Test
@@ -242,7 +242,7 @@ class BankFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("Credenziali non valide"));
+                .andExpect(jsonPath("$.error").value("Invalid credentials"));
     }
 
     @Test
@@ -260,7 +260,7 @@ class BankFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginJson))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("Utente non trovato"));
+                .andExpect(jsonPath("$.error").value("User not found"));
     }
 
     @Test
@@ -396,7 +396,7 @@ class BankFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(externalInTransferJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Il nome del mittente deve essere fornito per i trasferimenti esterni"));
+                .andExpect(jsonPath("$.error").value("The sender name must be provided for external transfers"));
     }
 
     @Test
@@ -440,7 +440,7 @@ class BankFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(outTransferJson))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Mittente e Destinatario non possono coincidere"));
+                .andExpect(jsonPath("$.error").value("Sender and Receiver cannot be the same account"));
     }
 
     @Test
@@ -463,7 +463,7 @@ class BankFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(outTransferJson))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("Ne' il mittente ne' il destinatario appartengono a questa banca"));
+                .andExpect(jsonPath("$.error").value("Neither sender nor receiver belongs to this bank"));
     }
 
     @Test
@@ -486,7 +486,7 @@ class BankFlowIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(outTransferJson))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Fondi insufficienti per l'operazione"));
+                .andExpect(jsonPath("$.error").value("Insufficient funds for this transaction"));
     }
 
     @Test
@@ -538,7 +538,7 @@ class BankFlowIntegrationTest {
         mockMvc.perform(get("/api/v1/accounts/{iban}/balance", "XXXXXX00X00X000X")
                         .header("Authorization", authHeader))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("Nessun conto trovato per l'IBAN specificato"));
+                .andExpect(jsonPath("$.error").value("No account found for the specified IBAN"));
     }
 
 }
