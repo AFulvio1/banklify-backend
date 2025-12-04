@@ -22,7 +22,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -114,9 +113,11 @@ public class TransactionService {
     public List<MovementDTO> getLatestMovements(String iban, int page, int size) {
         log.info("Fetching latest movements for IBAN: {}, page: {}, size: {}", iban, page, size);
         PageRequest pageRequest = PageRequest.of(page, size);
-        return transactionRepository.findByAccountIbanOrderByEventTimestampDesc(iban, pageRequest).stream()
+        List<MovementDTO> movements =  transactionRepository.findByAccountIbanOrderByEventTimestampDesc(iban, pageRequest).stream()
                 .map(transactionMapper::toTransactionDTO)
                 .toList();
+        log.info("Fetched {} movements for IBAN: {}", movements.size(), iban);
+        return movements;
     }
 
 }

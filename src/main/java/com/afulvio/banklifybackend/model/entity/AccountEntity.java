@@ -2,6 +2,7 @@ package com.afulvio.banklifybackend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ public class AccountEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
+    @ToString.Exclude
     private ClientEntity client;
 
     @Column(precision = 15, scale = 2)

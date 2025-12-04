@@ -296,6 +296,7 @@ class BankFlowIntegrationTest {
                         .header("Authorization", authHeader))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.firstName").value("Mario"))
+                .andExpect(jsonPath("$.lastName").value("Rossi"))
                 .andExpect(jsonPath("$.email").value("mario.rossi@example.com"));
     }
 
@@ -517,7 +518,9 @@ class BankFlowIntegrationTest {
     void balance() throws Exception {
         mockMvc.perform(get("/api/v1/accounts/{iban}/balance", ibanMario)
                         .header("Authorization", authHeader))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ledgerBalance").value(82.67))
+                .andExpect(jsonPath("$.availableBalance").value(82.67));
     }
 
     @Test
