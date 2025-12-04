@@ -7,14 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -32,7 +30,9 @@ class BankFlowIntegrationTest {
     private ObjectMapper objectMapper;
 
     private static String authHeader;
-    private static String iban;
+
+    private static String ibanMario;
+    private static String ibanGiovanni;
 
     private String baseRegisterJson() {
         return """
@@ -66,7 +66,7 @@ class BankFlowIntegrationTest {
 
     @Test
     @Order(11)
-    @DisplayName("POST /api/v1/auth/register - Bad Request, Missing All Required Fields")
+    @DisplayName("POST /api/v1/auth/register - Bad Request: Missing All Required Fields")
     void register_missingAllRequiredFields() throws Exception {
         MvcResult result = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +99,7 @@ class BankFlowIntegrationTest {
 
     @Test
     @Order(12)
-    @DisplayName("POST /api/v1/auth/register - Bad Request Invalid Email Format")
+    @DisplayName("POST /api/v1/auth/register - Bad Request: Invalid Email Format")
     void register_invalidEmail() throws Exception {
         String body = baseRegisterJson().replace("mario.rossi@example.com", "not-an-email");
 
@@ -112,7 +112,7 @@ class BankFlowIntegrationTest {
 
     @Test
     @Order(13)
-    @DisplayName("POST /api/v1/auth/register - Bad Request Short Password")
+    @DisplayName("POST /api/v1/auth/register - Bad Request: Short Password")
     void register_shortPassword() throws Exception {
         String body = baseRegisterJson().replace("Password123!", "12345");
 
@@ -125,7 +125,7 @@ class BankFlowIntegrationTest {
 
     @Test
     @Order(14)
-    @DisplayName("POST /api/v1/auth/register - Bad Request Invalid Tax Code Length")
+    @DisplayName("POST /api/v1/auth/register - Bad Request: Invalid Tax Code Length")
     void register_invalidTaxCodeLength() throws Exception {
         String body = baseRegisterJson().replace("RSSMRA80A01H501U", "CFTROPPOCORTO");
 
@@ -138,7 +138,7 @@ class BankFlowIntegrationTest {
 
     @Test
     @Order(15)
-    @DisplayName("POST /api/v1/auth/register - Bad Request Invalid Zip Code Length")
+    @DisplayName("POST /api/v1/auth/register - Bad Request: Invalid Zip Code Length")
     void register_invalidProvinceLength() throws Exception {
         String body = baseRegisterJson().replace("\"province\": \"MI\"", "\"province\": \"MIL\"");
 
@@ -151,7 +151,7 @@ class BankFlowIntegrationTest {
 
     @Test
     @Order(16)
-    @DisplayName("POST /api/v1/auth/register - Bad Request Invalid Zip Code Length")
+    @DisplayName("POST /api/v1/auth/register - Bad Request: Invalid Zip Code Length")
     void register_invalidZipCodeLength() throws Exception {
         String body = baseRegisterJson().replace("\"zipCode\": \"20121\"", "\"zipCode\": \"2012\"");
 
@@ -164,7 +164,7 @@ class BankFlowIntegrationTest {
 
     @Test
     @Order(17)
-    @DisplayName("POST /api/v1/auth/register - Bad Request Null Birth Date")
+    @DisplayName("POST /api/v1/auth/register - Bad Request: Null Birth Date")
     void register_nullBirthDate() throws Exception {
         String body = baseRegisterJson().replace("\"birthDate\": \"1980-01-01\"", "\"birthDate\": null");
 
@@ -175,28 +175,30 @@ class BankFlowIntegrationTest {
                 .andExpect(jsonPath("$.error").value("Il campo birthDate e obbligatorio"));
     }
 
-//    @Test
-//    @Order(18)
-//    @DisplayName("POST /api/v1/auth/register - Conflict Email Already Used")
-//    void register_emailAlreadyUsed() throws Exception {
-//        String body = baseRegisterJson().replace("mario.rossi@example.com", "duplicate@example.com");
-//
-//        mockMvc.perform(post("/api/v1/auth/register")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(body))
-//                .andExpect(status().isCreated())
-//                .andExpect(content().string("Registration successfully done"));
-//
-//        mockMvc.perform(post("/api/v1/auth/register")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(body))
-//                .andExpect(status().isConflict())
-//                .andExpect(jsonPath("$.message").value("error.auth.email.in.use"));
-//    }
+    @Test
+    @Order(18)
+    @DisplayName("POST /api/v1/auth/register - Conflict: Email Already Used")
+    void register_emailAlreadyUsed() throws Exception {
+        String body = baseRegisterJson()
+                .replace("mario.rossi@example.com", "giovanni.bianchi@example.com")
+                .replace("RSSMRA80A01H501U", "BNCGNN80A01H501U");
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(content().string("Registration successfully done"));
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("L'email e' gia' in uso"));
+    }
 
     @Test
     @Order(20)
-    @DisplayName(("POST /api/v1/auth/login"))
+    @DisplayName(("POST /api/v1/auth/login - OK"))
     void logIn() throws Exception {
         String loginJson = """
             {
@@ -217,17 +219,78 @@ class BankFlowIntegrationTest {
         String loginResponseBody = loginResult.getResponse().getContentAsString();
         JsonNode loginNode = objectMapper.readTree(loginResponseBody);
         String jwtToken = loginNode.get("token").asText();
-        iban = loginNode.get("iban").asText();
+        ibanMario = loginNode.get("iban").asText();
 
         assertThat(jwtToken).isNotBlank();
-        assertThat(iban).isNotBlank();
+        assertThat(ibanMario).isNotBlank();
 
         authHeader = "Bearer " + jwtToken;
     }
 
     @Test
+    @Order(21)
+    @DisplayName(("POST /api/v1/auth/login - Unauthorized: Invalid password"))
+    void logIn_invalidPassword() throws Exception {
+        String loginJson = """
+            {
+              "email": "mario.rossi@example.com",
+              "password": "WrongPassword!"
+            }
+            """;
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Credenziali non valide"));
+    }
+
+    @Test
+    @Order(22)
+    @DisplayName(("POST /api/v1/auth/login - Not Found: Client Not Found"))
+    void logIn_clientNotFound() throws Exception {
+        String loginJson = """
+            {
+              "email": "user.not.exist@exemple.com",
+              "password": "Password123!"
+            }
+            """;
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Utente non trovato"));
+    }
+
+    @Test
+    @Order(23)
+    @DisplayName("POST /api/v1/auth/login - OK: Second User Registration")
+    void registerSecondUser() throws Exception {
+        String loginJson = """
+            {
+              "email": "giovanni.bianchi@example.com",
+              "password": "Password123!"
+            }
+            """;
+
+        MvcResult loginResult = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").exists())
+                .andExpect(jsonPath("$.iban").exists())
+                .andExpect(jsonPath("$.firstName").value("Mario"))
+                .andReturn();
+
+        String loginResponseBody = loginResult.getResponse().getContentAsString();
+        JsonNode loginNode = objectMapper.readTree(loginResponseBody);
+        ibanGiovanni = loginNode.get("iban").asText();
+    }
+
+    @Test
     @Order(30)
-    @DisplayName(("GET /api/v1/client/profile"))
+    @DisplayName(("GET /api/v1/client/profile - OK"))
     void profile() throws Exception {
         mockMvc.perform(get("/api/v1/client/profile")
                         .header("Authorization", authHeader))
@@ -237,8 +300,16 @@ class BankFlowIntegrationTest {
     }
 
     @Test
+    @Order(31)
+    @DisplayName(("GET /api/v1/client/profile - Unauthorized: Missing Token"))
+    void profile_unauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/client/profile"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @Order(40)
-    @DisplayName(("POST /api/v1/transactions/external/transfer - IN"))
+    @DisplayName(("POST /api/v1/transactions/external/transfer - OK: In"))
     void externalTransferIn() throws Exception {
         String externalInTransferJson = """
             {
@@ -250,10 +321,9 @@ class BankFlowIntegrationTest {
               "currency": "EUR",
               "description": "Accredito stipendio"
             }
-            """.formatted(iban);
+            """.formatted(ibanMario);
 
         mockMvc.perform(post("/api/v1/transactions/external/transfer")
-                        .header("Authorization", authHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(externalInTransferJson))
                 .andExpect(status().isOk())
@@ -262,7 +332,7 @@ class BankFlowIntegrationTest {
 
     @Test
     @Order(41)
-    @DisplayName(("POST /api/v1/transactions/external/transfer - OUT"))
+    @DisplayName(("POST /api/v1/transactions/external/transfer - OK: Out"))
     void externalTransferOut() throws Exception {
         String externalOutTransferJson = """
             {
@@ -270,14 +340,13 @@ class BankFlowIntegrationTest {
               "senderIban": "%s",
               "receiverName": "Luigi Bianchi",
               "receiverIban": "IT99H0123456789000000009999",
-              "amount": 200.00,
+              "amount": 317.33,
               "currency": "EUR",
               "description": "Bonifico affitto"
             }
-            """.formatted(iban);
+            """.formatted(ibanMario);
 
         mockMvc.perform(post("/api/v1/transactions/external/transfer")
-                        .header("Authorization", authHeader)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(externalOutTransferJson))
                 .andExpect(status().isOk())
@@ -285,17 +354,188 @@ class BankFlowIntegrationTest {
     }
 
     @Test
+    @Order(42)
+    @DisplayName(("POST /api/v1/transactions/transfer - OK"))
+    void transferOut() throws Exception {
+        String outTransferJson = """
+            {
+              "senderIban": "%s",
+              "receiverName": "Giovanni Bianchi",
+              "receiverIban": "%s",
+              "amount": 600.00,
+              "currency": "EUR",
+              "description": "Regalo compleanno"
+            }
+            """.formatted(ibanMario, ibanGiovanni);
+
+        mockMvc.perform(post("/api/v1/transactions/transfer")
+                        .header("Authorization", authHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(outTransferJson))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Transfer successfully completed"));
+    }
+
+    @Test
+    @Order(43)
+    @DisplayName(("POST /api/v1/transactions/external/transfer - Bad Request: Missing Sender Name"))
+    void externalTransferIn_missingSenderName() throws Exception {
+        String externalInTransferJson = """
+            {
+              "senderIban": "EXT-BANK-IBAN-123",
+              "receiverName": "Mario Rossi",
+              "receiverIban": "%s",
+              "amount": 1000.00,
+              "currency": "EUR",
+              "description": "Accredito stipendio"
+            }
+            """.formatted(ibanMario);
+
+        mockMvc.perform(post("/api/v1/transactions/external/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(externalInTransferJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Il nome del mittente deve essere fornito per i trasferimenti esterni"));
+    }
+
+    @Test
+    @Order(44)
+    @DisplayName(("POST /api/v1/transactions/transfer - Unauthorized: Missing Auth Header"))
+    void transferOut_missingAuthHeader() throws Exception {
+        String outTransferJson = """
+            {
+              "senderIban": "%s",
+              "receiverName": "Giovanni Bianchi",
+              "receiverIban": "%s",
+              "amount": 200.00,
+              "currency": "EUR",
+              "description": "Regalo compleanno"
+            }
+            """.formatted(ibanMario, ibanGiovanni);
+
+        mockMvc.perform(post("/api/v1/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(outTransferJson))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(45)
+    @DisplayName(("POST /api/v1/transactions/transfer - Bad Request: Same Account Transfer"))
+    void transferOut_sameAccountTransfer() throws Exception {
+        String outTransferJson = """
+            {
+              "senderIban": "%s",
+              "receiverName": "Giovanni Bianchi",
+              "receiverIban": "%s",
+              "amount": 200.00,
+              "currency": "EUR",
+              "description": "Regalo compleanno"
+            }
+            """.formatted(ibanMario, ibanMario);
+
+        mockMvc.perform(post("/api/v1/transactions/transfer")
+                        .header("Authorization", authHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(outTransferJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Mittente e Destinatario non possono coincidere"));
+    }
+
+    @Test
+    @Order(46)
+    @DisplayName(("POST /api/v1/transactions/transfer - Bad Request: Account Not Found"))
+    void transferOut_accountNotFound() throws Exception {
+        String outTransferJson = """
+            {
+              "senderIban": "%s",
+              "receiverName": "Giovanni Bianchi",
+              "receiverIban": "%s",
+              "amount": 200.00,
+              "currency": "EUR",
+              "description": "Regalo compleanno"
+            }
+            """.formatted("XXXXXX00X00X000X", "YYYYYY00Y00Y000Y");
+
+        mockMvc.perform(post("/api/v1/transactions/transfer")
+                        .header("Authorization", authHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(outTransferJson))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Ne' il mittente ne' il destinatario appartengono a questa banca"));
+    }
+
+    @Test
+    @Order(47)
+    @DisplayName(("POST /api/v1/transactions/transfer - Conflict: Insufficient Funds"))
+    void transferOut_insufficientFund() throws Exception {
+        String outTransferJson = """
+            {
+              "senderIban": "%s",
+              "receiverName": "Giovanni Bianchi",
+              "receiverIban": "%s",
+              "amount": 100.00,
+              "currency": "EUR",
+              "description": "Regalo compleanno"
+            }
+            """.formatted(ibanMario, ibanGiovanni);
+
+        mockMvc.perform(post("/api/v1/transactions/transfer")
+                        .header("Authorization", authHeader)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(outTransferJson))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("Fondi insufficienti per l'operazione"));
+    }
+
+    @Test
     @Order(50)
-    @DisplayName(("GET /api/v1/transactions/{iban}/movements"))
+    @DisplayName(("GET /api/v1/transactions/{iban}/movements - OK"))
     void listMovements() throws Exception {
-        mockMvc.perform(get("/api/v1/transactions/{iban}/movements", iban)
+        mockMvc.perform(get("/api/v1/transactions/{iban}/movements", ibanMario)
                         .header("Authorization", authHeader)
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                // ci aspettiamo almeno i 2 movimenti generati sopra
                 .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(2)));
+    }
+
+    @Test
+    @Order(51)
+    @DisplayName(("GET /api/v1/transactions/{iban}/movements - Unauthorized: Missing Auth Header"))
+    void listMovements_missingAuthHeader() throws Exception {
+        mockMvc.perform(get("/api/v1/transactions/{iban}/movements", ibanMario)
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(60)
+    @DisplayName(("GET /api/v1/accounts/{iban}/balance - OK"))
+    void balance() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts/{iban}/balance", ibanMario)
+                        .header("Authorization", authHeader))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @Order(61)
+    @DisplayName(("GET /api/v1/accounts/{iban}/balance - Unauthorized: Missing Auth Header"))
+    void balance_missingAuthHeader() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts/{iban}/balance", ibanMario))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Order(62)
+    @DisplayName(("GET /api/v1/accounts/{iban}/balance - Not Found: Invalid IBAN"))
+    void balance_invalidIban() throws Exception {
+        mockMvc.perform(get("/api/v1/accounts/{iban}/balance", "XXXXXX00X00X000X")
+                        .header("Authorization", authHeader))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Nessun conto trovato per l'IBAN specificato"));
     }
 
 }
