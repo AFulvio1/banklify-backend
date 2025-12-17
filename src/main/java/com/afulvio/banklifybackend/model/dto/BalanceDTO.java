@@ -10,12 +10,12 @@ import java.math.BigDecimal;
 @Builder
 @Schema(
         name = "BalanceDTO",
-        description = "Data Transfer Object representing the financial balance of a bank account."
+        description = "Data Transfer Object representing the financial balance of a bank account"
 )
 public class BalanceDTO {
 
     @Schema(
-            description = "The International Bank Account Number (IBAN) of the account.",
+            description = "The International Bank Account Number (IBAN) of the account",
             example = "IT60X0542811101000000123456"
     )
     private String iban;

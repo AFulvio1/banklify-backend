@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 @Data
 @Schema(
         name = "MovementDTO",
-        description = "Data Transfer Object representing a single transaction or movement on a bank account."
+        description = "Data Transfer Object representing a single transaction or movement on a bank account"
 )
 public class MovementDTO {
 
-    @Schema(description = "Unique identifier for the transaction.", example = "987654321")
+    @Schema(description = "Unique identifier for the transaction", example = "987654321")
     private Long TransactionId;
 
     @Schema(
@@ -27,10 +27,10 @@ public class MovementDTO {
     @Schema(description = "The amount of the transaction. Positive for incoming, negative for outgoing movements.", example = "-250.00")
     private BigDecimal amount;
 
-    @Schema(description = "A detailed description or reason for the transaction.", example = "Monthly gym subscription")
+    @Schema(description = "A detailed description or reason for the transaction", example = "Monthly gym subscription")
     private String description;
 
-    @Schema(description = "The name of the counterparty involved in the transaction.", example = "Fitness Center Ltd.")
+    @Schema(description = "The name of the counterparty involved in the transaction", example = "Fitness Center Ltd.")
     private String counterpartyName;
 
 }

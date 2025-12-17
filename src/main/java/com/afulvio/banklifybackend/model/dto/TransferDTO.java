@@ -23,7 +23,7 @@ public class TransferDTO {
     private String senderIban;
 
     @Schema(
-            description = "Name of the sender of the transfer.",
+            description = "Name of the sender of the transfer",
             example = "Mario Rossi"
     )
     private String senderName;
@@ -36,14 +36,14 @@ public class TransferDTO {
     private String receiverIban;
 
     @Schema(
-            description = "Name of the receiver of the transfer.",
+            description = "Name of the receiver of the transfer",
             example = "Giovanni Rossi"
     )
     @NotBlank(message = "error.validation.required")
     private String receiverName;
 
     @Schema(
-            description = "The amount to transfer. Must be a positive decimal number.",
+            description = "The amount to transfer. Must be a positive decimal number",
             example = "150.75"
     )
     @NotNull(message = "error.validation.required")
@@ -51,7 +51,7 @@ public class TransferDTO {
     private BigDecimal amount;
 
     @Schema(
-            description = "A description or reason for the transfer.",
+            description = "A description or reason for the transfer",
             example = "Payment for monthly rent"
     )
     @NotBlank(message = "error.validation.required")
